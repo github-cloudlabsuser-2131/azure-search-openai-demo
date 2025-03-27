@@ -1,5 +1,5 @@
 import os
-from abc import ABC
+from abc import ABC  # Abstract Base Class for defining abstract methods
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -90,41 +90,60 @@ class ThoughtStep:
     props: Optional[dict[str, Any]] = None
 
 
+# Define the abstract base class 'Approach'
 class Approach(ABC):
+    """
+    Abstract base class for implementing different approaches.
+    This class serves as a blueprint for specific implementations
+    and provides shared functionality like initialization and filter building.
+    """
 
     def __init__(
         self,
-        search_client: SearchClient,
-        openai_client: AsyncOpenAI,
-        auth_helper: AuthenticationHelper,
-        query_language: Optional[str],
-        query_speller: Optional[str],
-        embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
-        embedding_model: str,
-        embedding_dimensions: int,
-        openai_host: str,
-        vision_endpoint: str,
-        vision_token_provider: Callable[[], Awaitable[str]],
-        prompt_manager: PromptManager,
+        search_client: SearchClient,  # Client for interacting with a search service
+        openai_client: AsyncOpenAI,  # Asynchronous client for OpenAI API
+        auth_helper: AuthenticationHelper,  # Helper for managing authentication and security
+        query_language: Optional[str],  # Language for queries (e.g., "en", "fr")
+        query_speller: Optional[str],  # Spelling correction for queries
+        embedding_deployment: Optional[str],  # Deployment ID for embeddings (specific to Azure OpenAI)
+        embedding_model: str,  # Name of the embedding model to use
+        embedding_dimensions: int,  # Dimensionality of the embeddings
+        openai_host: str,  # Host URL for OpenAI API
+        vision_endpoint: str,  # Endpoint for vision-related services
+        vision_token_provider: Callable[[], Awaitable[str]],  # Function to provide tokens for vision API
+        prompt_manager: PromptManager,  # Manager for handling prompts
     ):
-        self.search_client = search_client
-        self.openai_client = openai_client
-        self.auth_helper = auth_helper
-        self.query_language = query_language
-        self.query_speller = query_speller
-        self.embedding_deployment = embedding_deployment
-        self.embedding_model = embedding_model
-        self.embedding_dimensions = embedding_dimensions
-        self.openai_host = openai_host
-        self.vision_endpoint = vision_endpoint
-        self.vision_token_provider = vision_token_provider
-        self.prompt_manager = prompt_manager
+        """
+        Initialize the Approach class with required dependencies and configurations.
+        """
+        self.search_client = search_client  # Store the search client instance
+        self.openai_client = openai_client  # Store the OpenAI client instance
+        self.auth_helper = auth_helper  # Store the authentication helper instance
+        self.query_language = query_language  # Store the query language
+        self.query_speller = query_speller  # Store the query speller
+        self.embedding_deployment = embedding_deployment  # Store the embedding deployment ID
+        self.embedding_model = embedding_model  # Store the embedding model name
+        self.embedding_dimensions = embedding_dimensions  # Store the embedding dimensions
+        self.openai_host = openai_host  # Store the OpenAI host URL
+        self.vision_endpoint = vision_endpoint  # Store the vision service endpoint
+        self.vision_token_provider = vision_token_provider  # Store the vision token provider function
+        self.prompt_manager = prompt_manager  # Store the prompt manager instance
 
     def build_filter(self, overrides: dict[str, Any], auth_claims: dict[str, Any]) -> Optional[str]:
-        include_category = overrides.get("include_category")
-        exclude_category = overrides.get("exclude_category")
-        security_filter = self.auth_helper.build_security_filters(overrides, auth_claims)
-        filters = []
+        """
+        Build a filter string based on overrides and authentication claims.
+        
+        Args:
+            overrides: A dictionary of override parameters (e.g., include/exclude categories).
+            auth_claims: A dictionary of authentication claims for security filtering.
+        
+        Returns:
+            A filter string or None if no filters are applied.
+        """
+        include_category = overrides.get("include_category")  # Get the category to include from overrides
+        exclude_category = overrides.get("exclude_category")  # Get the category to exclude from overrides
+        security_filter = self.auth_helper.build_security_filters(overrides, auth_claims)  # Build security filters
+        filters = []  # Initialize an empty list to hold filter conditions
         if include_category:
             filters.append("category eq '{}'".format(include_category.replace("'", "''")))
         if exclude_category:
